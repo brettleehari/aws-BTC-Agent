@@ -225,7 +225,7 @@ def main():
         'bedrock_agent_alias_id': os.getenv('BEDROCK_AGENT_ALIAS_ID', 'YOUR_ALIAS_ID'),
         'database_connection_string': os.getenv(
             'DATABASE_URL',
-            'postgresql://user:password@localhost:5432/market_hunter'
+            'postgresql://DB_USER:DB_PASS@DB_HOST:5432/DB_NAME'
         ),
         'region_name': os.getenv('AWS_REGION', 'us-east-1')
     }

@@ -18,7 +18,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from market_hunter_agent import MarketHunterAgent, DataSource, MarketContext
-from market_hunter_with_router import MarketHunterAgent WithRouter
 
 
 @dataclass
