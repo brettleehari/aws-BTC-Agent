@@ -1,0 +1,271 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Market Hunter Agent API",
+    "description": "API for querying Bitcoin market data sources",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/whale-movements": {
+      "post": {
+        "summary": "Query large Bitcoin transactions",
+        "description": "Retrieve information about large on-chain Bitcoin transactions (whale movements)",
+        "operationId": "query_whale_movements",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "threshold_btc": {
+                    "type": "number",
+                    "description": "Minimum transaction size in BTC",
+                    "default": 100
+                  },
+                  "timeframe_hours": {
+                    "type": "number",
+                    "description": "Look back period in hours",
+                    "default": 24
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total_volume": {
+                      "type": "number"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/narrative-shifts": {
+      "post": {
+        "summary": "Query social media trends",
+        "description": "Retrieve social media sentiment and trending topics",
+        "operationId": "query_narrative_shifts",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "platforms": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Social platforms to analyze"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/arbitrage-opportunities": {
+      "post": {
+        "summary": "Query arbitrage opportunities",
+        "description": "Find price differences across exchanges",
+        "operationId": "query_arbitrage_opportunities",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "min_spread_percent": {
+                    "type": "number",
+                    "description": "Minimum spread percentage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/influencer-signals": {
+      "post": {
+        "summary": "Query influencer trading signals",
+        "description": "Retrieve technical analysis from known traders",
+        "operationId": "query_influencer_signals",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "min_followers": {
+                    "type": "number",
+                    "description": "Minimum follower count"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/technical-breakouts": {
+      "post": {
+        "summary": "Query technical breakouts",
+        "description": "Detect chart patterns and breakouts",
+        "operationId": "query_technical_breakouts",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "timeframes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Chart timeframes to analyze"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/institutional-flows": {
+      "post": {
+        "summary": "Query institutional flows",
+        "description": "Track large institutional holder movements",
+        "operationId": "query_institutional_flows",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "min_holding_btc": {
+                    "type": "number",
+                    "description": "Minimum holding size"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/derivatives-signals": {
+      "post": {
+        "summary": "Query derivatives signals",
+        "description": "Retrieve funding rates, open interest, and liquidations",
+        "operationId": "query_derivatives_signals",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exchanges": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Derivative exchanges to query"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/macro-signals": {
+      "post": {
+        "summary": "Query macro signals",
+        "description": "Retrieve Fear & Greed Index and market-wide sentiment",
+        "operationId": "query_macro_signals",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    }
+  }
+}

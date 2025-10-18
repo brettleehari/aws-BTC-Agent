@@ -1,0 +1,139 @@
+# Pre-commit hooks configuration
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Code formatting
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.9
+        args: ['--line-length=100']
+        exclude: '^(lambda_functions/|tests/fixtures/)'
+
+  # Import sorting
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile=black', '--line-length=100']
+        exclude: '^(lambda_functions/|tests/fixtures/)'
+
+  # Linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--max-line-length=100', '--extend-ignore=E203,W503']
+        exclude: '^(lambda_functions/|tests/fixtures/|docs/)'
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: ['--ignore-missing-imports', '--no-strict-optional']
+        exclude: '^(lambda_functions/|tests/|docs/)'
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-ll', '-i']
+        exclude: '^(tests/|docs/)'
+
+  # YAML validation
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+        exclude: '^(.github/workflows/)'
+      - id: end-of-file-fixer
+        exclude: '^(docs/|lambda_functions/)'
+      - id: trailing-whitespace
+        exclude: '^(docs/|lambda_functions/)'
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: check-json
+      - id: detect-private-key
+
+  # Documentation
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: ['--ignore=D100,D101,D102,D103,D104,D105,D107,D203,D213']
+        exclude: '^(tests/|lambda_functions/|docs/)'
+
+  # Goal Alignment Tests (Custom)
+  - repo: local
+    hooks:
+      - id: goal-alignment-tests
+        name: Goal Alignment Tests
+        entry: python tests/test_goal_alignment.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
+        verbose: true
+
+  # Unit Tests (Fast subset)
+  - repo: local
+    hooks:
+      - id: fast-unit-tests
+        name: Fast Unit Tests
+        entry: python tests/run_tests.py --unit --fast
+        language: system
+        pass_filenames: false
+        stages: [commit]
+        verbose: true
+
+  # Check for TODO/FIXME
+  - repo: local
+    hooks:
+      - id: check-todos
+        name: Check for TODOs
+        entry: bash -c 'if git diff --cached --name-only | xargs grep -n "TODO\|FIXME\|XXX" 2>/dev/null; then echo "Warning: Found TODO/FIXME comments"; fi; exit 0'
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+  # Check requirements.txt is up to date
+  - repo: local
+    hooks:
+      - id: check-requirements
+        name: Check requirements.txt
+        entry: bash -c 'if git diff --cached --name-only | grep -q "requirements.txt\|setup.py"; then echo "✓ Requirements updated"; fi; exit 0'
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+  # Prevent commits to main (optional - comment out if not needed)
+  # - repo: https://github.com/pre-commit/pre-commit-hooks
+  #   rev: v4.5.0
+  #   hooks:
+  #     - id: no-commit-to-branch
+  #       args: ['--branch', 'main', '--branch', 'master']
+
+# Global settings
+default_language_version:
+  python: python3.9
+
+# Skip some hooks for specific files
+exclude: |
+  (?x)^(
+      \.git/|
+      \.venv/|
+      venv/|
+      __pycache__/|
+      \.pytest_cache/|
+      \.mypy_cache/|
+      \.vscode/|
+      \.idea/|
+      build/|
+      dist/|
+      .*\.egg-info/
+  )
