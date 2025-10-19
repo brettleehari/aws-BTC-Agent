@@ -17,9 +17,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from market_hunter_agent import (
     MarketHunterAgent,
     MarketContext,
-    SourceMetrics,
-    DataSource
+    SourceMetrics
 )
+
+# Data source constants matching market_hunter_agent.py
+WHALE_MOVEMENTS = "whaleMovements"
+SOCIAL_SENTIMENT = "narrativeShifts"
+DERIVATIVES = "derivativesSignals"
 
 
 class TestMarketContextAssessment(unittest.TestCase):
@@ -157,9 +161,9 @@ class TestSourceSelection(unittest.TestCase):
         scores = self.agent.calculate_source_scores(context)
         
         # In bearish market, derivatives and whales should score higher
-        self.assertIn(DataSource.DERIVATIVES, scores)
-        self.assertIn(DataSource.WHALE_MOVEMENTS, scores)
-        self.assertGreater(scores[DataSource.DERIVATIVES], 0)
+        self.assertIn(DERIVATIVES, scores)
+        self.assertIn(WHALE_MOVEMENTS, scores)
+        self.assertGreater(scores[DERIVATIVES], 0)
     
     def test_exploration_introduces_randomness(self):
         """Test that exploration rate introduces variability"""
@@ -197,7 +201,7 @@ class TestAdaptiveLearning(unittest.TestCase):
     
     def test_metric_update_increases_on_success(self):
         """Test that successful source increases its metric"""
-        source = DataSource.WHALE_MOVEMENTS
+        source = WHALE_MOVEMENTS
         context = MarketContext(
             btc_price=45000,
             volatility="high",
@@ -224,7 +228,7 @@ class TestAdaptiveLearning(unittest.TestCase):
     
     def test_metric_update_decreases_on_failure(self):
         """Test that failed source decreases its metric"""
-        source = DataSource.SOCIAL_SENTIMENT
+        source = SOCIAL_SENTIMENT
         context = MarketContext(
             btc_price=45000,
             volatility="high",
@@ -253,7 +257,7 @@ class TestAdaptiveLearning(unittest.TestCase):
     
     def test_ema_learning_rate(self):
         """Test exponential moving average calculation"""
-        source = DataSource.DERIVATIVES
+        source = DERIVATIVES
         
         # Set known initial value
         self.agent.source_metrics[source].success_rate = 0.5
@@ -314,7 +318,7 @@ class TestBedrockAgentInvocation(unittest.TestCase):
         
         # Test invocation
         result = agent.query_data_source(
-            source=DataSource.WHALE_MOVEMENTS,
+            source=WHALE_MOVEMENTS,
             market_context={"btc_price": 45000}
         )
         
@@ -340,7 +344,7 @@ class TestBedrockAgentInvocation(unittest.TestCase):
         
         # Test invocation - should handle error gracefully
         result = agent.query_data_source(
-            source=DataSource.WHALE_MOVEMENTS,
+            source=WHALE_MOVEMENTS,
             market_context={"btc_price": 45000}
         )
         
@@ -362,7 +366,7 @@ class TestSignalGeneration(unittest.TestCase):
     def test_whale_activity_signal_generation(self):
         """Test whale activity signal generation"""
         results = {
-            DataSource.WHALE_MOVEMENTS: {
+            WHALE_MOVEMENTS: {
                 "whale_transactions": [
                     {"amount": 250, "direction": "exchange_to_wallet"},
                     {"amount": 180, "direction": "exchange_to_wallet"}
@@ -380,7 +384,7 @@ class TestSignalGeneration(unittest.TestCase):
     def test_sentiment_signal_generation(self):
         """Test positive sentiment signal generation"""
         results = {
-            DataSource.SOCIAL_SENTIMENT: {
+            SOCIAL_SENTIMENT: {
                 "sentiment_score": 0.75,
                 "trending_topics": ["bullish", "moon"]
             }
@@ -395,10 +399,10 @@ class TestSignalGeneration(unittest.TestCase):
     def test_multiple_signals_from_different_sources(self):
         """Test that multiple signals can be generated"""
         results = {
-            DataSource.WHALE_MOVEMENTS: {
+            WHALE_MOVEMENTS: {
                 "whale_transactions": [{"amount": 200, "direction": "exchange_to_wallet"}]
             },
-            DataSource.DERIVATIVES: {
+            DERIVATIVES: {
                 "funding_rate": 0.08
             }
         }

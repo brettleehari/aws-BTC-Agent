@@ -1,0 +1,470 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main  # Deploy on merge to main
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+env:
+  AWS_REGION: us-east-1  # Change to your preferred region
+  PYTHON_VERSION: '3.12'
+  LAMBDA_FUNCTION_NAME: market-hunter-action-handler
+
+jobs:
+  test:
+    name: Run Tests Before Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+      
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  build-lambda:
+    name: Build Lambda Package
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Create deployment package
+        run: |
+          mkdir -p lambda_deployment
+          cd lambda_deployment
+          
+          # Copy source files
+          cp -r ../src/memory .
+          cp ../src/bedrock_action_handler.py lambda_function.py
+          cp ../src/market_hunter_agent_integrated.py .
+          cp ../src/llm_router.py .
+          
+          # Install dependencies
+          pip install -t . boto3 requests pydantic --upgrade
+          
+          # Create ZIP file
+          zip -r ../market-hunter-lambda.zip .
+          
+          echo "Lambda package size:"
+          ls -lh ../market-hunter-lambda.zip
+      
+      - name: Upload Lambda artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-package
+          path: market-hunter-lambda.zip
+          retention-days: 7
+
+  deploy-dynamodb:
+    name: Deploy DynamoDB Tables
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install boto3
+        run: pip install boto3
+      
+      - name: Check existing tables
+        id: check-tables
+        run: |
+          python deployment/dynamodb_setup.py status || echo "Tables may not exist"
+      
+      - name: Create/Update DynamoDB tables
+        run: |
+          python deployment/dynamodb_setup.py create
+          echo "✅ DynamoDB tables deployed"
+      
+      - name: Verify tables
+        run: |
+          python deployment/dynamodb_setup.py status
+
+  deploy-lambda:
+    name: Deploy Lambda Function
+    runs-on: ubuntu-latest
+    needs: [test, build-lambda]
+    
+    outputs:
+      lambda-arn: ${{ steps.deploy.outputs.lambda_arn }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Download Lambda artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-package
+      
+      - name: Check if Lambda exists
+        id: check-lambda
+        continue-on-error: true
+        run: |
+          if aws lambda get-function --function-name ${{ env.LAMBDA_FUNCTION_NAME }} 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Lambda function (if not exists)
+        if: steps.check-lambda.outputs.exists == 'false'
+        run: |
+          # Get Lambda execution role ARN
+          LAMBDA_ROLE_ARN=$(aws iam get-role --role-name MarketHunterLambdaRole --query 'Role.Arn' --output text 2>/dev/null || echo "")
+          
+          if [ -z "$LAMBDA_ROLE_ARN" ]; then
+            echo "❌ Lambda role not found. Creating..."
+            # Create role
+            aws iam create-role \
+              --role-name MarketHunterLambdaRole \
+              --assume-role-policy-document '{
+                "Version": "2012-10-17",
+                "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": {"Service": "lambda.amazonaws.com"},
+                  "Action": "sts:AssumeRole"
+                }]
+              }'
+            
+            # Attach policies
+            aws iam attach-role-policy \
+              --role-name MarketHunterLambdaRole \
+              --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+            
+            aws iam attach-role-policy \
+              --role-name MarketHunterLambdaRole \
+              --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+            
+            aws iam attach-role-policy \
+              --role-name MarketHunterLambdaRole \
+              --policy-arn arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+            
+            # Wait for role propagation
+            echo "Waiting for IAM role propagation..."
+            sleep 10
+            
+            LAMBDA_ROLE_ARN=$(aws iam get-role --role-name MarketHunterLambdaRole --query 'Role.Arn' --output text)
+          fi
+          
+          # Create Lambda function
+          aws lambda create-function \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --runtime python3.12 \
+            --role $LAMBDA_ROLE_ARN \
+            --handler lambda_function.lambda_handler \
+            --zip-file fileb://market-hunter-lambda.zip \
+            --timeout 300 \
+            --memory-size 512 \
+            --environment "Variables={
+              AWS_REGION=${{ env.AWS_REGION }},
+              DECISIONS_TABLE=agent_decisions,
+              MEMORY_TABLE=agent_memory_ltm,
+              STATE_TABLE=agent_state,
+              SIGNALS_TABLE=agent_signals
+            }"
+          
+          echo "✅ Lambda function created"
+      
+      - name: Update Lambda function code
+        if: steps.check-lambda.outputs.exists == 'true'
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --zip-file fileb://market-hunter-lambda.zip
+          
+          echo "✅ Lambda function updated"
+      
+      - name: Update Lambda configuration
+        run: |
+          aws lambda update-function-configuration \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --timeout 300 \
+            --memory-size 512 \
+            --environment "Variables={
+              AWS_REGION=${{ env.AWS_REGION }},
+              DECISIONS_TABLE=agent_decisions,
+              MEMORY_TABLE=agent_memory_ltm,
+              STATE_TABLE=agent_state,
+              SIGNALS_TABLE=agent_signals
+            }"
+      
+      - name: Wait for Lambda update
+        run: |
+          echo "Waiting for Lambda function to be ready..."
+          aws lambda wait function-updated \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }}
+          echo "✅ Lambda function ready"
+      
+      - name: Get Lambda ARN
+        id: deploy
+        run: |
+          LAMBDA_ARN=$(aws lambda get-function \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --query 'Configuration.FunctionArn' \
+            --output text)
+          echo "lambda_arn=$LAMBDA_ARN" >> $GITHUB_OUTPUT
+          echo "Lambda ARN: $LAMBDA_ARN"
+
+  deploy-bedrock-agent:
+    name: Deploy Bedrock Agent
+    runs-on: ubuntu-latest
+    needs: [deploy-lambda, deploy-dynamodb]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Check if Bedrock Agent exists
+        id: check-agent
+        continue-on-error: true
+        run: |
+          AGENT_ID="${{ secrets.BEDROCK_AGENT_ID }}"
+          if [ -n "$AGENT_ID" ]; then
+            if aws bedrock-agent get-agent --agent-id $AGENT_ID --region ${{ env.AWS_REGION }} 2>/dev/null; then
+              echo "exists=true" >> $GITHUB_OUTPUT
+              echo "agent_id=$AGENT_ID" >> $GITHUB_OUTPUT
+            else
+              echo "exists=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Bedrock Agent (if not exists)
+        if: steps.check-agent.outputs.exists == 'false'
+        id: create-agent
+        run: |
+          # Create Bedrock Agent role if needed
+          BEDROCK_ROLE_ARN=$(aws iam get-role --role-name MarketHunterBedrockAgentRole --query 'Role.Arn' --output text 2>/dev/null || echo "")
+          
+          if [ -z "$BEDROCK_ROLE_ARN" ]; then
+            echo "Creating Bedrock Agent role..."
+            aws iam create-role \
+              --role-name MarketHunterBedrockAgentRole \
+              --assume-role-policy-document '{
+                "Version": "2012-10-17",
+                "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": {"Service": "bedrock.amazonaws.com"},
+                  "Action": "sts:AssumeRole"
+                }]
+              }'
+            
+            aws iam put-role-policy \
+              --role-name MarketHunterBedrockAgentRole \
+              --policy-name BedrockAgentInvokeLambda \
+              --policy-document '{
+                "Version": "2012-10-17",
+                "Statement": [{
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": "*"
+                }]
+              }'
+            
+            sleep 10
+            BEDROCK_ROLE_ARN=$(aws iam get-role --role-name MarketHunterBedrockAgentRole --query 'Role.Arn' --output text)
+          fi
+          
+          # Create agent
+          AGENT_ID=$(aws bedrock-agent create-agent \
+            --region ${{ env.AWS_REGION }} \
+            --agent-name "BTC-Market-Hunter-${{ github.run_number }}" \
+            --foundation-model "anthropic.claude-3-5-sonnet-20241022-v2:0" \
+            --instruction "You are an autonomous Bitcoin market analyst..." \
+            --agent-resource-role-arn $BEDROCK_ROLE_ARN \
+            --idle-session-ttl-in-seconds 1800 \
+            --query 'agent.agentId' \
+            --output text)
+          
+          echo "agent_id=$AGENT_ID" >> $GITHUB_OUTPUT
+          echo "✅ Bedrock Agent created: $AGENT_ID"
+          echo "⚠️  Please add BEDROCK_AGENT_ID=$AGENT_ID to GitHub Secrets"
+      
+      - name: Update Bedrock Agent
+        if: steps.check-agent.outputs.exists == 'true'
+        run: |
+          AGENT_ID="${{ secrets.BEDROCK_AGENT_ID }}"
+          echo "Updating existing Bedrock Agent: $AGENT_ID"
+          
+          aws bedrock-agent update-agent \
+            --region ${{ env.AWS_REGION }} \
+            --agent-id $AGENT_ID \
+            --agent-name "BTC-Market-Hunter" \
+            --foundation-model "anthropic.claude-3-5-sonnet-20241022-v2:0" \
+            --instruction "You are an autonomous Bitcoin market analyst. Your role is to assess market conditions, select data sources, and make autonomous decisions."
+          
+          echo "✅ Bedrock Agent updated"
+      
+      - name: Prepare agent
+        run: |
+          AGENT_ID="${{ steps.create-agent.outputs.agent_id || secrets.BEDROCK_AGENT_ID }}"
+          echo "Preparing agent: $AGENT_ID"
+          
+          aws bedrock-agent prepare-agent \
+            --region ${{ env.AWS_REGION }} \
+            --agent-id $AGENT_ID
+          
+          echo "✅ Agent prepared"
+
+  verify-deployment:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-bedrock-agent]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Verify DynamoDB tables
+        run: |
+          echo "Checking DynamoDB tables..."
+          for table in agent_decisions agent_memory_ltm agent_state agent_signals; do
+            STATUS=$(aws dynamodb describe-table --table-name $table --query 'Table.TableStatus' --output text 2>/dev/null || echo "NOT_FOUND")
+            echo "  $table: $STATUS"
+            if [ "$STATUS" != "ACTIVE" ]; then
+              echo "❌ Table $table is not active"
+              exit 1
+            fi
+          done
+          echo "✅ All DynamoDB tables are active"
+      
+      - name: Verify Lambda function
+        run: |
+          echo "Checking Lambda function..."
+          STATE=$(aws lambda get-function --function-name ${{ env.LAMBDA_FUNCTION_NAME }} --query 'Configuration.State' --output text)
+          echo "  Lambda state: $STATE"
+          if [ "$STATE" != "Active" ]; then
+            echo "❌ Lambda function is not active"
+            exit 1
+          fi
+          echo "✅ Lambda function is active"
+      
+      - name: Verify Bedrock Agent
+        run: |
+          if [ -n "${{ secrets.BEDROCK_AGENT_ID }}" ]; then
+            echo "Checking Bedrock Agent..."
+            STATUS=$(aws bedrock-agent get-agent --agent-id ${{ secrets.BEDROCK_AGENT_ID }} --region ${{ env.AWS_REGION }} --query 'agent.agentStatus' --output text)
+            echo "  Agent status: $STATUS"
+            echo "✅ Bedrock Agent verified"
+          else
+            echo "⚠️  BEDROCK_AGENT_ID not set in secrets"
+          fi
+      
+      - name: Test Lambda invocation
+        run: |
+          echo "Testing Lambda function..."
+          aws lambda invoke \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --payload '{"action": "health_check"}' \
+            --cli-binary-format raw-in-base64-out \
+            response.json
+          
+          cat response.json
+          echo ""
+          echo "✅ Lambda invocation successful"
+
+  notify:
+    name: Send Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [verify-deployment]
+    if: always()
+    
+    steps:
+      - name: Deployment Success
+        if: needs.verify-deployment.result == 'success'
+        run: |
+          echo "🎉 Deployment successful!"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Author: ${{ github.actor }}"
+      
+      - name: Deployment Failed
+        if: needs.verify-deployment.result != 'success'
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Check logs for details"
+          exit 1

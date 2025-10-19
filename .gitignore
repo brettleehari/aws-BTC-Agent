@@ -142,3 +142,6 @@ Thumbs.db
 .env.local
 lambda-packages/
 deployment/
+
+# Documentation (internal planning)
+docs/projectrequirement.md

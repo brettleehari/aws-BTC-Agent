@@ -17,7 +17,14 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from market_hunter_agent import MarketHunterAgent, DataSource, MarketContext
+from market_hunter_agent import MarketHunterAgent, MarketContext
+
+# Data source constants matching market_hunter_agent.py
+WHALE_MOVEMENTS = "whaleMovements"
+SOCIAL_SENTIMENT = "narrativeShifts"
+DERIVATIVES = "derivativesSignals"
+INFLUENCER_SIGNALS = "influencerSignals"
+TECHNICAL_BREAKOUTS = "technicalBreakouts"
 
 
 @dataclass
@@ -50,7 +57,7 @@ class EvaluationScenario:
     name: str
     description: str
     market_data: Dict
-    expected_sources: List[DataSource]
+    expected_sources: List[str]
     expected_signal_types: List[str]
     context_type: str  # high_volatility, low_volatility, bullish, bearish
 
@@ -77,10 +84,10 @@ class AgentEvaluator:
                     "trend": "bullish"
                 },
                 expected_sources=[
-                    DataSource.WHALE_MOVEMENTS,
-                    DataSource.INSTITUTIONAL_FLOWS,
-                    DataSource.SOCIAL_SENTIMENT,
-                    DataSource.DERIVATIVES
+                    WHALE_MOVEMENTS,
+                    "institutionalFlows",
+                    SOCIAL_SENTIMENT,
+                    DERIVATIVES
                 ],
                 expected_signal_types=["WHALE_ACTIVITY", "INSTITUTIONAL_ACCUMULATION"],
                 context_type="high_volatility_bullish"
@@ -96,9 +103,9 @@ class AgentEvaluator:
                     "trend": "bearish"
                 },
                 expected_sources=[
-                    DataSource.DERIVATIVES,
-                    DataSource.WHALE_MOVEMENTS,
-                    DataSource.ON_CHAIN_METRICS
+                    DERIVATIVES,
+                    WHALE_MOVEMENTS,
+                    "onChainMetrics"
                 ],
                 expected_signal_types=["EXTREME_FUNDING", "WHALE_ACTIVITY"],
                 context_type="high_volatility_bearish"
@@ -115,9 +122,9 @@ class AgentEvaluator:
                     "trend": "sideways"
                 },
                 expected_sources=[
-                    DataSource.SOCIAL_SENTIMENT,
-                    DataSource.NARRATIVE_SHIFTS,
-                    DataSource.ON_CHAIN_METRICS
+                    SOCIAL_SENTIMENT,
+                    "narrativeShifts",
+                    "onChainMetrics"
                 ],
                 expected_signal_types=["POSITIVE_NARRATIVE"],
                 context_type="low_volatility_sideways"
@@ -134,9 +141,9 @@ class AgentEvaluator:
                     "trend": "bullish"
                 },
                 expected_sources=[
-                    DataSource.TECHNICAL_BREAKOUTS,
-                    DataSource.WHALE_MOVEMENTS,
-                    DataSource.SOCIAL_SENTIMENT
+                    TECHNICAL_BREAKOUTS,
+                    WHALE_MOVEMENTS,
+                    SOCIAL_SENTIMENT
                 ],
                 expected_signal_types=["TECHNICAL_BREAKOUT", "POSITIVE_NARRATIVE"],
                 context_type="medium_volatility_breakout"
@@ -154,9 +161,9 @@ class AgentEvaluator:
                     "fear_greed_index": 15  # Extreme fear
                 },
                 expected_sources=[
-                    DataSource.MACRO_SIGNALS,
-                    DataSource.DERIVATIVES,
-                    DataSource.WHALE_MOVEMENTS
+                    "macroSignals",
+                    DERIVATIVES,
+                    WHALE_MOVEMENTS
                 ],
                 expected_signal_types=["EXTREME_FEAR"],
                 context_type="extreme_fear"
@@ -173,9 +180,9 @@ class AgentEvaluator:
                     "fear_greed_index": 85  # Extreme greed
                 },
                 expected_sources=[
-                    DataSource.MACRO_SIGNALS,
-                    DataSource.SOCIAL_SENTIMENT,
-                    DataSource.INSTITUTIONAL_FLOWS
+                    "macroSignals",
+                    SOCIAL_SENTIMENT,
+                    "institutionalFlows"
                 ],
                 expected_signal_types=["EXTREME_GREED"],
                 context_type="extreme_greed"
@@ -186,8 +193,8 @@ class AgentEvaluator:
     
     def evaluate_source_selection_accuracy(
         self,
-        selected_sources: List[DataSource],
-        expected_sources: List[DataSource],
+        selected_sources: List[str],
+        expected_sources: List[str],
         context: MarketContext
     ) -> float:
         """

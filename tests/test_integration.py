@@ -17,8 +17,12 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from market_hunter_agent import MarketHunterAgent, DataSource
+from market_hunter_agent import MarketHunterAgent
 from market_hunter_with_router import MarketHunterAgentWithRouter
+
+# Data source constants matching market_hunter_agent.py
+WHALE_MOVEMENTS = "whaleMovements"
+DERIVATIVES = "derivativesSignals"
 
 
 class TestBedrockAgentIntegration(unittest.TestCase):
@@ -56,7 +60,7 @@ class TestBedrockAgentIntegration(unittest.TestCase):
         try:
             # Test simple query
             result = self.agent.query_data_source(
-                source=DataSource.WHALE_MOVEMENTS,
+                source="whaleMovements",
                 market_context={"btc_price": 45000, "timestamp": datetime.utcnow().isoformat()}
             )
             
@@ -120,9 +124,9 @@ class TestBedrockAgentIntegration(unittest.TestCase):
     def test_multiple_source_queries(self):
         """Test querying multiple data sources"""
         sources = [
-            DataSource.WHALE_MOVEMENTS,
-            DataSource.SOCIAL_SENTIMENT,
-            DataSource.DERIVATIVES
+            WHALE_MOVEMENTS,
+            "narrativeShifts",
+            DERIVATIVES
         ]
         
         results = {}
@@ -172,13 +176,13 @@ class TestBedrockAgentWithRouter(unittest.TestCase):
         """Test that router selects appropriate models for different tasks"""
         # Simple extraction task
         result1 = self.agent.query_data_source(
-            source=DataSource.WHALE_MOVEMENTS,
+            source="whaleMovements",
             market_context={"btc_price": 45000}
         )
         
         # Complex pattern recognition task
         result2 = self.agent.query_data_source(
-            source=DataSource.SOCIAL_SENTIMENT,
+            source="narrativeShifts",
             market_context={"btc_price": 45000}
         )
         
