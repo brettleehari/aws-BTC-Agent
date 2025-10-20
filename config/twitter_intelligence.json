@@ -1,0 +1,291 @@
+{
+  "twitter_intelligence_config": {
+    "version": "1.0.0",
+    "last_updated": "2025-10-19",
+    "description": "Top Bitcoin influencer accounts for Market Hunter Agent intelligence gathering",
+    
+    "top_bitcoin_twitter_accounts": [
+      {
+        "handle": "@saylor",
+        "name": "Michael Saylor",
+        "followers": "3.6M",
+        "specialty": "Corporate Bitcoin adoption, MicroStrategy CEO, institutional Bitcoin strategy, macro economic insights",
+        "priority": 1,
+        "data_value": "Corporate Bitcoin buying signals, institutional adoption trends, treasury strategy insights",
+        "signal_types": ["whale_movements", "institutional_flows"],
+        "check_frequency": "real_time",
+        "weight": 0.95,
+        "tags": ["institutional", "corporate", "whale", "macro"]
+      },
+      {
+        "handle": "@100trillionUSD",
+        "name": "PlanB",
+        "followers": "2.1M",
+        "specialty": "Stock-to-Flow (S2F) model creator, Bitcoin price predictions, quantitative analysis, scarcity modeling",
+        "priority": 2,
+        "data_value": "Long-term price forecasts, scarcity-based analysis, statistical market models",
+        "signal_types": ["technical_breakouts", "macro_signals"],
+        "check_frequency": "real_time",
+        "weight": 0.90,
+        "tags": ["analyst", "price_prediction", "quantitative", "model"]
+      },
+      {
+        "handle": "@woonomic",
+        "name": "Willy Woo",
+        "followers": "1.1M",
+        "specialty": "On-chain data analysis, Bitcoin NVT ratio pioneer, market cycle analysis, data-driven insights",
+        "priority": 3,
+        "data_value": "On-chain metrics, market cycle timing, blockchain data insights, network health indicators",
+        "signal_types": ["whale_movements", "technical_breakouts"],
+        "check_frequency": "daily",
+        "weight": 0.88,
+        "tags": ["on_chain", "data_analyst", "metrics", "cycles"]
+      },
+      {
+        "handle": "@aantonop",
+        "name": "Andreas M. Antonopoulos",
+        "followers": "850K",
+        "specialty": "Bitcoin education, blockchain technology, security expert, author of 'Mastering Bitcoin'",
+        "priority": 4,
+        "data_value": "Technical insights, security best practices, educational content, protocol updates",
+        "signal_types": ["narrative_shifts"],
+        "check_frequency": "weekly",
+        "weight": 0.75,
+        "tags": ["technical", "education", "security", "protocol"]
+      },
+      {
+        "handle": "@nayibbukele",
+        "name": "Nayib Bukele",
+        "followers": "6.2M",
+        "specialty": "El Salvador President, nation-state Bitcoin adoption, legal tender implementation, government policy",
+        "priority": 5,
+        "data_value": "Sovereign Bitcoin adoption signals, regulatory trends, government purchase announcements",
+        "signal_types": ["whale_movements", "narrative_shifts", "macro_signals"],
+        "check_frequency": "real_time",
+        "weight": 0.92,
+        "tags": ["government", "whale", "regulatory", "adoption"]
+      },
+      {
+        "handle": "@APompliano",
+        "name": "Anthony Pompliano (Pomp)",
+        "followers": "1.8M",
+        "specialty": "Bitcoin evangelism, investment strategy, institutional adoption, podcast host, venture capital",
+        "priority": 6,
+        "data_value": "Investment thesis updates, institutional news, macro Bitcoin narratives, market commentary",
+        "signal_types": ["narrative_shifts", "influencer_signals", "institutional_flows"],
+        "check_frequency": "multiple_daily",
+        "weight": 0.82,
+        "tags": ["influencer", "institutional", "media", "narrative"]
+      },
+      {
+        "handle": "@VitalikButerin",
+        "name": "Vitalik Buterin",
+        "followers": "5.4M",
+        "specialty": "Ethereum co-founder, blockchain scalability, smart contracts, crypto-economic design",
+        "priority": 7,
+        "data_value": "Blockchain innovation insights, Ethereum updates affecting BTC, technical development trends",
+        "signal_types": ["narrative_shifts", "technical_breakouts"],
+        "check_frequency": "weekly",
+        "weight": 0.70,
+        "tags": ["ethereum", "technical", "innovation", "development"]
+      },
+      {
+        "handle": "@RaoulGMI",
+        "name": "Raoul Pal",
+        "followers": "1.7M",
+        "specialty": "Macro investing, Real Vision CEO, global finance trends, institutional crypto strategy",
+        "priority": 8,
+        "data_value": "Macro economic analysis, institutional adoption signals, global liquidity trends affecting BTC",
+        "signal_types": ["macro_signals", "institutional_flows"],
+        "check_frequency": "daily",
+        "weight": 0.85,
+        "tags": ["macro", "institutional", "finance", "liquidity"]
+      },
+      {
+        "handle": "@gladstein",
+        "name": "Alex Gladstein",
+        "followers": "190K",
+        "specialty": "Human Rights Foundation, Bitcoin for financial freedom, emerging markets adoption, censorship resistance",
+        "priority": 9,
+        "data_value": "Global adoption trends, regulatory freedom insights, emerging market signals, human rights perspective",
+        "signal_types": ["narrative_shifts", "macro_signals"],
+        "check_frequency": "weekly",
+        "weight": 0.65,
+        "tags": ["adoption", "regulatory", "emerging_markets", "freedom"]
+      },
+      {
+        "handle": "@will_clemente",
+        "name": "Will Clemente",
+        "followers": "350K",
+        "specialty": "Blockware Solutions analyst, on-chain analysis, institutional flows, mining data, market cycles",
+        "priority": 10,
+        "data_value": "Mining insights, institutional flow analysis, on-chain data, market structure analysis",
+        "signal_types": ["whale_movements", "institutional_flows", "derivatives_signals"],
+        "check_frequency": "daily",
+        "weight": 0.80,
+        "tags": ["on_chain", "mining", "institutional", "analyst"]
+      }
+    ],
+    
+    "monitoring_strategy": {
+      "real_time_alerts": {
+        "accounts": ["@saylor", "@100trillionUSD", "@nayibbukele"],
+        "check_interval_seconds": 300,
+        "alert_on_keywords": [
+          "buying", "bought", "purchase", "acquired", "treasury",
+          "stock-to-flow", "S2F", "prediction", "forecast",
+          "El Salvador", "legal tender", "government", "adoption"
+        ]
+      },
+      "daily_analysis": {
+        "accounts": ["@woonomic", "@will_clemente", "@RaoulGMI"],
+        "check_interval_hours": 6,
+        "aggregate_metrics": true
+      },
+      "weekly_deep_dive": {
+        "accounts": ["@aantonop", "@APompliano", "@VitalikButerin", "@gladstein"],
+        "check_interval_days": 2,
+        "full_thread_analysis": true
+      },
+      "sentiment_tracking": {
+        "all_accounts": true,
+        "sentiment_aggregation": "weighted_average",
+        "bullish_threshold": 0.6,
+        "bearish_threshold": 0.4
+      },
+      "whale_watch": {
+        "corporate_buys": "@saylor",
+        "government_purchases": "@nayibbukele",
+        "institutional_signals": ["@saylor", "@APompliano", "@RaoulGMI"]
+      }
+    },
+    
+    "data_categories": {
+      "price_predictions": {
+        "accounts": ["@100trillionUSD", "@woonomic"],
+        "weight": 0.85,
+        "confidence_threshold": 0.7
+      },
+      "institutional_adoption": {
+        "accounts": ["@saylor", "@APompliano", "@RaoulGMI"],
+        "weight": 0.95,
+        "signal_importance": "critical"
+      },
+      "on_chain_metrics": {
+        "accounts": ["@woonomic", "@will_clemente"],
+        "weight": 0.90,
+        "data_freshness": "real_time_preferred"
+      },
+      "regulatory_signals": {
+        "accounts": ["@nayibbukele", "@gladstein"],
+        "weight": 0.80,
+        "geographic_scope": "global"
+      },
+      "technical_analysis": {
+        "accounts": ["@aantonop", "@VitalikButerin"],
+        "weight": 0.70,
+        "focus": "protocol_and_innovation"
+      },
+      "macro_trends": {
+        "accounts": ["@RaoulGMI", "@saylor", "@APompliano"],
+        "weight": 0.88,
+        "timeframe": "medium_to_long_term"
+      }
+    },
+    
+    "update_frequency": {
+      "multiple_daily": {
+        "accounts": ["@saylor", "@APompliano", "@nayibbukele"],
+        "posts_per_day_avg": "5-15",
+        "priority_level": "high"
+      },
+      "daily": {
+        "accounts": ["@100trillionUSD", "@woonomic", "@will_clemente"],
+        "posts_per_day_avg": "1-5",
+        "priority_level": "medium-high"
+      },
+      "weekly": {
+        "accounts": ["@aantonop", "@VitalikButerin", "@RaoulGMI", "@gladstein"],
+        "posts_per_week_avg": "3-10",
+        "priority_level": "medium"
+      }
+    },
+    
+    "signal_generation_rules": {
+      "whale_alert": {
+        "triggers": [
+          "Saylor announces MicroStrategy BTC purchase",
+          "Bukele announces El Salvador BTC purchase",
+          "Large institutional flow detected by Clemente"
+        ],
+        "severity": "high",
+        "action": "immediate_analysis"
+      },
+      "price_prediction_update": {
+        "triggers": [
+          "PlanB updates S2F model",
+          "Woo updates on-chain metrics",
+          "Significant deviation from predictions"
+        ],
+        "severity": "medium",
+        "action": "update_forecast"
+      },
+      "narrative_shift": {
+        "triggers": [
+          "Multiple accounts change sentiment",
+          "Major regulatory news from Bukele/Gladstein",
+          "Technical breakthrough from Antonopoulos/Vitalik"
+        ],
+        "severity": "medium-high",
+        "action": "reassess_strategy"
+      },
+      "macro_indicator": {
+        "triggers": [
+          "Raoul Pal macro outlook change",
+          "Saylor comments on monetary policy",
+          "Fed/ECB policy discussion"
+        ],
+        "severity": "high",
+        "action": "adjust_context"
+      }
+    },
+    
+    "rate_limits": {
+      "twitter_api_v2": {
+        "tweets_per_15_min": 900,
+        "users_per_15_min": 900,
+        "app_auth_rate_limit": "450_per_15_min"
+      },
+      "recommended_polling": {
+        "high_priority": "5_minutes",
+        "medium_priority": "15_minutes",
+        "low_priority": "1_hour"
+      }
+    },
+    
+    "data_enrichment": {
+      "sentiment_analysis": {
+        "enabled": true,
+        "method": "llm_based",
+        "model": "claude-3-sonnet"
+      },
+      "keyword_extraction": {
+        "enabled": true,
+        "extract_tickers": true,
+        "extract_prices": true,
+        "extract_dates": true
+      },
+      "engagement_metrics": {
+        "track_likes": true,
+        "track_retweets": true,
+        "track_replies": true,
+        "weight_by_engagement": true
+      },
+      "thread_analysis": {
+        "enabled": true,
+        "follow_threads": true,
+        "max_depth": 10
+      }
+    }
+  }
+}

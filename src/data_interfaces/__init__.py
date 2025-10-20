@@ -42,6 +42,11 @@ from .openapi_generator import OpenAPIGenerator, generate_bedrock_action_groups
 from .coingecko_interface import CoinGeckoInterface
 from .glassnode_interface import GlassnodeInterface
 from .sentiment_interface import SentimentInterface
+from .twitter_interface import TwitterInterface
+from .newsapi_interface import NewsAPIInterface
+from .alphavantage_interface import AlphaVantageInterface
+from .blockchain_interface import BlockchainDotComInterface
+from .binance_interface import BinanceInterface
 
 
 # Auto-register all concrete implementations
@@ -51,6 +56,11 @@ def _register_default_sources():
     registry.register(CoinGeckoInterface)
     registry.register(GlassnodeInterface)
     registry.register(SentimentInterface)
+    registry.register(TwitterInterface)
+    registry.register(NewsAPIInterface)
+    registry.register(AlphaVantageInterface)
+    registry.register(BlockchainDotComInterface)
+    registry.register(BinanceInterface)
 
 
 # Register sources on module import
@@ -90,6 +100,11 @@ __all__ = [
     "CoinGeckoInterface",
     "GlassnodeInterface",
     "SentimentInterface",
+    "TwitterInterface",
+    "NewsAPIInterface",
+    "AlphaVantageInterface",
+    "BlockchainDotComInterface",
+    "BinanceInterface",
 ]
 
 __version__ = "1.0.0"

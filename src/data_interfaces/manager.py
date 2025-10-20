@@ -80,7 +80,7 @@ class DataInterfaceManager:
             Data response
         """
         # Check cache first
-        if use_cache and request.cache_enabled:
+        if use_cache and request.use_cache:
             cached = self._get_cached(request)
             if cached:
                 logger.info(f"Cache hit for {request.data_type.value}")
@@ -104,7 +104,7 @@ class DataInterfaceManager:
         if preferred_source:
             sources = sorted(
                 sources,
-                key=lambda x: (x['name'] != preferred_source, -x['score'])
+                key=lambda x: (x[0] != preferred_source, -x[1])
             )
         
         # Try parallel fetching if enabled
@@ -115,8 +115,8 @@ class DataInterfaceManager:
                 return response
         
         # Sequential fetching with fallback
-        for source_info in sources:
-            source_name = source_info['name']
+        for source_name, score in sources:
+            source_info = (source_name, score)
             
             # Check circuit breaker
             if self._is_circuit_open(source_name):
@@ -125,7 +125,7 @@ class DataInterfaceManager:
             
             try:
                 source = self.registry.create_source_instance(source_name)
-                logger.info(f"Fetching from {source_name} (score: {source_info['score']:.2f})")
+                logger.info(f"Fetching from {source_name} (score: {score:.2f})")
                 
                 response = await source.fetch(request)
                 

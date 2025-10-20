@@ -1,29 +1,33 @@
 # AWS BTC Market Hunter Agent
 
-An autonomous Bitcoin market intelligence agent built with **Amazon Bedrock AgentCore** that makes independent decisions about which data sources to query based on real-time market conditions and learned performance.
+An autonomous Bitcoin market intelligence agent with **Hybrid Adaptive Learning + Goal-Oriented** architecture that makes independent decisions about which data sources to query based on real-time market conditions and learned performance.
 
 ## 🤖 Overview
 
 The Market Hunter Agent is a truly agentic system that:
-- **Autonomously decides** which of 8 data sources to query each cycle
-- **Learns from experience** using adaptive algorithms
+- **🧠 Hybrid Architecture**: Adaptive Learning Core + Goal-Oriented Layer
+- **Autonomously decides** which of 7 data sources to query each cycle (87.5% coverage)
+- **Learns from experience** using adaptive algorithms (Learning Rate: 0.1)
 - **Adapts to market conditions** (volatility, trend, time of day)
-- **Generates signals** for other trading agents
-- **Self-optimizes** through exploration vs exploitation
-- **🆕 Dynamically routes** between 10 Bedrock LLMs for optimal cost/performance
+- **Generates actionable signals** for other trading agents
+- **Self-optimizes** through exploration vs exploitation (20% exploration)
+- **📊 Advanced Analytics**: Sentiment Analyzer + Technical Indicators
+- **✅ Fully Operational**: 7/8 sources integrated, 2 advanced modules
 
 ## ✨ Key Features
 
 ### 1. Autonomous Decision-Making
 The agent independently selects 3-6 data sources per cycle from:
-- 🐋 **Whale Movements** - Large on-chain transactions (>100 BTC)
-- 📈 **Narrative Shifts** - Social media trends and sentiment
-- 💱 **Arbitrage Opportunities** - Cross-exchange price spreads
-- 👥 **Influencer Signals** - Technical analysis from traders
-- 📊 **Technical Breakouts** - Chart pattern detection
-- 🏦 **Institutional Flows** - Large holder movements
-- 📉 **Derivatives Signals** - Funding rates, liquidations
-- 🌍 **Macro Signals** - Fear & Greed Index, market sentiment
+- 🐋 **Whale Movements** → Blockchain.com (whale tracking) ✅
+- 📈 **Narrative Shifts** → NewsAPI + Twitter + Sentiment Analyzer ✅
+- 💱 **Arbitrage Opportunities** → CoinGecko + Binance + Alpha Vantage ✅
+- 👥 **Influencer Signals** → Twitter (10 influencers) ✅
+- 📊 **Technical Breakouts** → Technical Indicators (RSI, MACD, BB, SMA, EMA) ✅
+- 🏦 **Institutional Flows** → Blockchain.com (on-chain metrics) ✅
+- 🌍 **Macro Signals** → Fear & Greed Index ✅
+- 📉 **Derivatives Signals** → To be added ⏳
+
+**Coverage**: 7/8 sources (87.5%) ✅
 
 ### 2. Context-Aware Strategy
 Selection based on:
@@ -42,11 +46,13 @@ new_metric = (1 - α) × old_metric + α × new_observation
 
 ### 4. Signal Generation
 Generates signals for other agents when patterns detected:
-- `WHALE_ACTIVITY` - Large transactions detected (severity: high)
-- `POSITIVE_NARRATIVE` - Bullish trending topics (severity: medium)
-- `INSTITUTIONAL_ACCUMULATION` - Large holdings increase (severity: high)
-- `EXTREME_FUNDING` - High funding rates (severity: critical)
-- `EXTREME_FEAR/GREED` - Sentiment extremes (severity: medium)
+- `WHALE_ACTIVITY` - Large transactions detected (severity: HIGH, target: orchestrator + risk-manager)
+- `POSITIVE_NARRATIVE` - Bullish trending topics (severity: MEDIUM, target: orchestrator)
+- `NEGATIVE_NARRATIVE` - Bearish sentiment (severity: MEDIUM, target: orchestrator)
+- `TECHNICAL_BREAKOUT` - STRONG_BUY/SELL signals (severity: HIGH, target: orchestrator + executor)
+- `EXTREME_GREED` - Fear & Greed >75 (severity: MEDIUM, target: risk-manager)
+- `EXTREME_FEAR` - Fear & Greed <25 (severity: MEDIUM, target: orchestrator)
+- `ARBITRAGE_OPPORTUNITY` - Price spread >0.5% (severity: LOW, target: executor)
 
 ### 5. 🆕 Intelligent LLM Routing
 **Dynamic model selection across 10 Bedrock models** for cost optimization:
@@ -70,34 +76,67 @@ See [LLM Router Documentation](docs/LLM_ROUTER.md) for details.
 
 ## 🏗️ Architecture
 
+### Three-Layer Hybrid Design
+
 ```
-Market Hunter Agent (Amazon Bedrock Agent)
-├── Agent Core (Claude 3 Sonnet)
-│   ├── Market Context Assessment
-│   ├── Source Selection Logic
-│   ├── Result Analysis
-│   └── Signal Generation
+┌─────────────────────────────────────────────────────────────┐
+│              GOAL-ORIENTED LAYER (Signal Generation)        │
+│  • Actionable Alerts • Multi-Objective Optimization         │
+│  • KPI Tracking • Inter-Agent Communication                 │
+└─────────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│            ADAPTIVE LEARNING CORE (Intelligence)            │
+│  • Performance Tracking • Context-Aware Scoring             │
+│  • Exploration vs Exploitation • Continuous Improvement     │
+└─────────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│               DATA SOURCE LAYER (7 Sources + 2 Modules)     │
+│  CoinGecko • Blockchain.com • Binance • Alpha Vantage       │
+│  Twitter • NewsAPI • Fear & Greed • Sentiment • Technical   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Component Details
+
+```
+Market Hunter Agent
+├── Adaptive Learning Core
+│   ├── Market Context Assessment (volatility, trend, session)
+│   ├── Source Scoring (performance + context + exploration)
+│   ├── Dynamic Selection (3-6 sources based on volatility)
+│   └── Learning Updates (EMA with α=0.1)
 │
-├── Action Group (Lambda)
-│   ├── query_whale_movements()
-│   ├── query_narrative_shifts()
-│   ├── query_arbitrage_opportunities()
-│   ├── query_influencer_signals()
-│   ├── query_technical_breakouts()
-│   ├── query_institutional_flows()
-│   ├── query_derivatives_signals()
-│   └── query_macro_signals()
+├── Data Source Integration (7 Active)
+│   ├── whaleMovements → Blockchain.com ✅
+│   ├── narrativeShifts → NewsAPI + Twitter + Sentiment ✅
+│   ├── arbitrageOpportunities → CoinGecko + Binance + AlphaVantage ✅
+│   ├── influencerSignals → Twitter (10 influencers) ✅
+│   ├── technicalBreakouts → Technical Indicators (RSI/MACD/BB) ✅
+│   ├── institutionalFlows → Blockchain.com (on-chain) ✅
+│   └── macroSignals → Fear & Greed Index ✅
 │
-├── Knowledge Base (Optional)
-│   ├── Historical Market Data
-│   ├── Trading Patterns
-│   └── Market Indicators
+├── Advanced Analytics Modules (2 Complete)
+│   ├── Sentiment Analyzer (~650 lines)
+│   │   ├── Multi-source aggregation
+│   │   ├── Weighted composite scoring
+│   │   ├── Trend analysis (24h/7d/30d)
+│   │   └── Divergence detection
+│   └── Technical Indicators (~700 lines)
+│       ├── RSI (14-period, 70/30 thresholds)
+│       ├── MACD (12/26/9, crossover detection)
+│       ├── Bollinger Bands (20/2, squeeze detection)
+│       ├── SMA/EMA (Golden Cross/Death Cross)
+│       └── Composite signals (STRONG_BUY → STRONG_SELL)
 │
-└── Storage (PostgreSQL)
-    ├── agent_executions
-    ├── source_metrics_history
-    ├── system_alerts
-    └── [8 data source tables]
+└── Signal Generation & Routing
+    ├── 7 Signal Types (WHALE_ACTIVITY, POSITIVE_NARRATIVE, etc.)
+    ├── Target Agents (orchestrator, risk-manager, executor)
+    ├── Severity Levels (CRITICAL, HIGH, MEDIUM, LOW)
+    └── Confidence Scoring (0-1 scale)
 ```
 
 ## 🚀 Quick Start
@@ -350,13 +389,67 @@ python src/example_usage.py
 
 **NEW**: Standalone module for fetching data from multiple external sources with intelligent routing and capability advertisement for AWS Bedrock Agents.
 
+### 📊 Data Sources Overview
+
+**Coverage: 7/12 sources = 58%** 🎯
+
+| # | Data Source | Status | Data Types | Cost | Rate Limit | Key Features | API Key Required |
+|---|-------------|--------|------------|------|------------|--------------|------------------|
+| 1 | **CoinGecko** | ✅ **LIVE** | Price, Market Cap, Volume | FREE | 30/min | Real-time prices, 42ms latency | ❌ No |
+| 2 | **Fear & Greed Index** | ✅ **LIVE** | Market Sentiment | FREE | Unlimited | Daily sentiment (0-100 scale) | ❌ No |
+| 3 | **Twitter Intelligence** | ✅ **LIVE** | Social Sentiment, Influencer Activity | FREE | 900/15min | 10 Bitcoin influencers, sentiment analysis | ✅ Yes (7 credentials) |
+| 4 | **NewsAPI** | ✅ **LIVE** | News, News Sentiment | FREE | 100/day | 13 major outlets, sentiment scoring | ✅ Yes |
+| 5 | **Alpha Vantage** | ✅ **LIVE** | Price, Volume, Technical Indicators | FREE | 500/day | Price validation, professional-grade data | ✅ Yes |
+| 6 | **Blockchain.com** | ✅ **LIVE** | On-Chain, Network Metrics, Whale Transactions | FREE | 60/min | Network health, hash rate, difficulty | ❌ No |
+| 7 | **Binance** | ✅ **LIVE** | Price, Volume, Order Book, Trades | FREE | 1200/min | Real-time exchange data, sub-second latency | ❌ No |
+| 8 | **CoinMarketCap** | ⏳ **PLANNED** | Price, Market Cap, Volume | FREE | 333/day | Market rankings, comprehensive data | ✅ Yes (free) |
+| 9 | **Coinbase** | ⏳ **PLANNED** | Price, Volume, Order Book | FREE | 10/sec | Institutional-grade, high reliability | ❌ No |
+| 10 | **Glassnode** | ⚠️ **PARTIAL** | On-Chain, Whale Tracking, Institutional Flows | PAID | 1000/day | Advanced on-chain analytics | ✅ Yes (premium) |
+| 11 | **Derivatives APIs** | ⏳ **PLANNED** | Funding Rates, Open Interest, Liquidations | FREE | Varies | Futures/perpetuals data from exchanges | ❌ No |
+| 12 | **Macro Economic (FRED)** | ⏳ **PLANNED** | Economic Indicators, Interest Rates | FREE | Unlimited | Federal Reserve data, inflation, rates | ✅ Yes (free) |
+
+### 🎯 Capabilities Matrix
+
+| Data Source | Real-Time | Historical | Sentiment | Technical Analysis | On-Chain | Exchange Data |
+|-------------|-----------|------------|-----------|-------------------|----------|---------------|
+| CoinGecko | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Fear & Greed | ✅ | ✅ (30 days) | ✅ | ❌ | ❌ | ❌ |
+| Twitter | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| NewsAPI | ✅ | ✅ (30 days) | ✅ | ❌ | ❌ | ❌ |
+| Alpha Vantage | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ |
+| Blockchain.com | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Binance | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| CoinMarketCap (Planned) | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Coinbase (Planned) | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Glassnode (Partial) | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+
+### 💰 Cost Analysis
+
+**Current Monthly Cost: $0** (All active sources use free tiers)
+
+| Source | Tier | Monthly Cost | Daily Requests | Notes |
+|--------|------|--------------|----------------|-------|
+| CoinGecko | Free | $0 | ~1,440 (1/min) | Sufficient for hourly polling |
+| Fear & Greed | Free | $0 | Unlimited | Daily updates |
+| Twitter | Free | $0 | ~8,640 (6/min) | 10 influencers, hourly checks |
+| NewsAPI | Free | $0 | 100/day | Sufficient for 2-3 hourly checks |
+| Alpha Vantage | Free | $0 | 500/day | Price validation 20x/day |
+| Blockchain.com | Free | $0 | ~2,880 (2/min) | Network metrics hourly |
+| **Total** | - | **$0** | **~13,560/day** | **All free tiers** |
+
+**Optional Premium Upgrades:**
+- Glassnode Pro: $499/month (advanced on-chain analytics)
+- NewsAPI Developer: $449/month (250K requests/month)
+- CoinGecko Pro: $129/month (unlimited requests)
+
 ### Features
-- **3 Data Source Implementations**: CoinGecko (price), Glassnode (on-chain), Sentiment Analyzer (Fear & Greed)
+- **6 Active Data Sources** (4 free, 2 with free API keys)
 - **Intelligent Source Selection**: Quality scoring algorithm ranks sources based on requirements
 - **Automatic Fallback**: Circuit breaker pattern prevents cascading failures
 - **Response Caching**: Configurable TTL reduces API calls
 - **OpenAPI Generation**: Auto-generates schemas for Bedrock Agent action groups
 - **Capability Advertisement**: Hybrid approach (OpenAPI + self-describing + registry)
+- **Sentiment Analysis**: Keyword-based sentiment from news and social media
 
 ### Quick Start
 ```python
@@ -390,13 +483,20 @@ if response.success:
 - **AWS Deployment**: [`docs/AWS_DEPLOYMENT_COMPLETE.md`](docs/AWS_DEPLOYMENT_COMPLETE.md)
 - **Memory System**: [`docs/memory/QUICKSTART.md`](docs/memory/QUICKSTART.md)
 
+### Data Sources & Integration
+- **🆕 NewsAPI Quickstart**: [`NEWSAPI_QUICKSTART.md`](NEWSAPI_QUICKSTART.md) - 5-minute setup guide
+- **NewsAPI Implementation**: [`docs/NEWSAPI_IMPLEMENTATION.md`](docs/NEWSAPI_IMPLEMENTATION.md) - Complete technical details
+- **Architecture Overview**: [`docs/ARCHITECTURE_OVERVIEW.md`](docs/ARCHITECTURE_OVERVIEW.md) - Plug-and-play design
+- **Data Source Comparison**: [`docs/DATA_SOURCE_COMPARISON.md`](docs/DATA_SOURCE_COMPARISON.md) - Gap analysis & roadmap
+
 ### Statistics
-- **2,680 lines** of module code
+- **3,500+ lines** of module code
 - **80+ unit tests** with pytest
-- **3 data sources** implemented
+- **4 data sources** implemented (33% coverage)
 - **4 action groups** for Bedrock Agents
-- **900+ lines** of documentation
+- **1,500+ lines** of documentation
 - **🆕 Automated CI/CD** deployment pipeline
+- **🆕 News sentiment** from 13 major outlets
 
 ## 📝 Future Enhancements
 

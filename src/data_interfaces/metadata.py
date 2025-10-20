@@ -29,6 +29,7 @@ class DataType(Enum):
     ORDER_BOOK = "order_book"
     TRADES = "trades"
     NETWORK_METRICS = "network_metrics"  # Add missing network metrics
+    INFLUENCER_ACTIVITY = "influencer_activity"  # Twitter influencer monitoring
 
 
 class Capability(Enum):
@@ -45,9 +46,11 @@ class Capability(Enum):
     AGGREGATION = "aggregation"
     TIME_SERIES = "time_series"
     STATISTICAL_ANALYSIS = "statistical_analysis"
+    TECHNICAL_ANALYSIS = "technical_analysis"  # Technical indicators (RSI, MACD, etc.)
     MARKET_DEPTH = "market_depth"
     RATE_LIMITED = "rate_limited"
     REQUIRES_AUTH = "requires_auth"
+    INFLUENCER_TRACKING = "influencer_tracking"  # Track specific influencers
     EXCHANGE_MONITORING = "exchange_monitoring"  # Monitor exchange flows
     ADVANCED_ANALYTICS = "advanced_analytics"  # Complex analysis capabilities
     DERIVATIVES_TRACKING = "derivatives_tracking"  # Track derivatives markets
